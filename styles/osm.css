@@ -91,6 +91,7 @@ main {
   justify-content: flex-start;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
+  width: 100%;
 }
 
 .placement-wrapper {
@@ -103,10 +104,18 @@ main {
   border: 1px solid #e0e0e0;
   padding: 0.5rem;
   border-radius: 4px;
+  box-sizing: border-box;
 }
 
 .placement-wrapper.full-width {
   flex: 0 0 100%;
+  max-width: none;
+  width: 100%;
+}
+
+/* Add this new style to ensure Klarna placements don't overflow */
+.placement-wrapper klarna-placement {
+  width: 100%;
   max-width: 100%;
 }
 
