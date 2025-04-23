@@ -1,0 +1,119 @@
+/* Base Styles */
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #444444;
+}
+
+header, footer {
+  text-align: center;
+  padding: 0.75rem;
+  background: #f8f8f8;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+}
+
+footer p {
+  font-size: 0.85rem;
+}
+
+/* Compact Intro & Controls */
+#intro-controls {
+  background: #eef2f7;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+#intro-controls .intro {
+  text-align: center;
+  margin: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.button-container {
+  text-align: center;
+  margin: 0.5rem;
+}
+
+.button-container button {
+  background: #0077cc;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  margin: 0 0.25rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.3s ease;
+}
+
+.button-container button:hover {
+  background: #005fa3;
+}
+
+/* Main Content */
+main {
+  max-width: 960px;
+  margin: 1.5rem auto;
+  padding: 0.5rem;
+}
+
+/* Placement Sections */
+.placement-section {
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  background: #fafafa;
+}
+
+.placement-section h2 {
+  text-align: left;
+  margin: 0.25rem 0 0.5rem 0;
+  font-size: 1.3rem;
+  color: #333;
+}
+
+/* Placement Containers */
+.placement-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.placement-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1 1 280px;
+  max-width: 320px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.placement-wrapper.full-width {
+  flex: 0 0 100%;
+  max-width: 100%;
+}
+
+.placement-label {
+  font-size: 0.9rem;
+  font-weight: 400;
+  margin: 0 0 0.25rem 0;
+  color: #444;
+  padding-bottom: 0.25rem;
+}
