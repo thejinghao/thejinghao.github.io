@@ -1,82 +1,296 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@100;500;700&display=swap');
+
+body {
+    font-family: 'Montserrat', sans-serif;
+}
+
+h3 {
+    font-weight: 100;
+}
+
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.cart-item {
-  display: flex;
-  gap: 20px;
-  padding: 20px;
-  border: 1px solid #ddd;
-  margin-bottom: 20px;
-  border-radius: 8px;
-}
-
-.cart-item img {
-  width: 200px;
-  height: auto;
-  border-radius: 4px;
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
 }
 
 .product-title {
-  margin: 0;
-  font-size: 1.2rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    color: #333;
 }
 
 .product-desc {
-  color: #666;
-  margin: 8px 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin: 0 0 8px 0;
+    color: #666;
 }
 
 .product-price {
-  font-weight: bold;
-  font-size: 1.1rem;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0;
+    color: #2c3e50;
+}
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.cart-item img {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.cart-item div {
+    flex: 1;
+    text-align: left;
+    margin-left: 10px;
 }
 
 .summary {
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 8px;
-  margin-top: 20px;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin: 20px 0;
+}
+
+.summary h2 {
+    margin-top: 0;
+    color: #2c3e50;
+}
+
+.auto-finalize {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 20px 0;
+    width: 100%;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    font-size: 0.8em;
 }
 
 .auto-finalize-options {
-  margin: 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transform: scale(0.8);
 }
 
-.table-container {
-  margin-top: 40px;
+.auto-finalize h3 {
+    font-weight: 500;
+    margin: 0;
+    color: black;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
+.auto-finalize input[type="radio"] {
+    display: none;
 }
 
-th, td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
+.auto-finalize input[type="radio"]+label {
+    padding: 8px 15px;
+    border-radius: 25px;
+    background-color: #ffffff;
+    color: #12b865;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    line-height: 25px;
+    margin-bottom: 0;
 }
 
-.wrap-cell {
-  word-break: break-all;
+.auto-finalize input[type="radio"]:checked+label {
+    background-color: #12b865;
+    color: #ffffff;
+    line-height: 25px;
+    margin-bottom: 0;
 }
 
-.btn-copy {
-  padding: 4px 8px;
-  background: #0077cc;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+.auto-finalize input[type="radio"]:not(:checked)+label {
+    color: #d6d5d4;
+    line-height: 25px;
+    margin-bottom: 0;
+}
+
+.auto-finalize input[type="radio"]:not(:checked)+label:last-of-type {
+    color: #d6d5d4;
+    line-height: 25px;
+    margin-bottom: 0;
+}
+
+.auto-finalize input[type="radio"]:checked+label:last-of-type {
+    background-color: #ed9440;
+    color: #ffffff;
+    line-height: 25px;
+    margin-bottom: 0;
+}
+
+.payloadOptions {
+    display: flex;
+    justify-content: center;
 }
 
 .payload-options {
-  margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    transform: scale(0.8);
 }
 
-.payload-options div {
-  margin: 10px 0;
+.payload-options h3 {
+    font-weight: 100;
+    margin: 0;
+    color: black;
+}
+
+.payload-options input[type="radio"] {
+    display: none;
+}
+
+.payload-options input[type="radio"]+label {
+    padding: 8px 15px;
+    border-radius: 25px;
+    background-color: #ffffff;
+    color: #d6d5d4;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    line-height: 25px;
+    margin-bottom: 0;
+}
+
+.payload-options input[type="radio"]:checked+label {
+    background-color: #4a74ff;
+    color: #ffffff;
+}
+
+.payload-options input[type="radio"]:not(:checked)+label {
+    background-color: #e3e3e3;
+    color: #000000;
+}
+
+.table-container {
+    width: 100%;
+    max-width: 800px;
+    overflow-x: auto;
+    margin: 0 auto;
+    margin-top: 30px;
+}
+
+.table {
+    border-collapse: collapse;
+    width: 100%;
+    background: white;
+}
+
+.table thead {
+    background-color: #f2f2f2;
+}
+
+.table th {
+    padding: 15px;
+}
+
+.table th,
+.table td {
+    padding: 12px;
+    border: 1px solid #dee2e6;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    font-size: 18px;
+}
+
+.table tr:hover {
+    background-color: #ddd;
+}
+
+.btn-copy {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-copy:hover {
+    background-color: darkgreen;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.8;
+    transform: scale(1.02);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.wrap-cell {
+    word-wrap: break-word;
+    max-width: 300px;
+    white-space: normal;
+}
+
+.close {
+    color: #aaaaaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Response Message */
+#message-container {
+    margin: 20px 0;
+    text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .cart-item {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .cart-item img {
+        width: 150px;
+        height: 150px;
+    }
+
+    .auto-finalize-options {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
