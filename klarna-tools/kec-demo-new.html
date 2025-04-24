@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Klarna Express Checkout Demo (New)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="../styles/kec.css">
+    <script src="https://x.klarnacdn.net/kp/lib/v1/api.js" async></script>
+</head>
+<body>
+    <header>
+        <h1>Klarna Express Checkout Demo (New)</h1>
+    </header>
+    <div class="container two-col">
+        <div class="basket-col">
+            <h2>Shopping Basket</h2>
+            <div id="basket-list"></div>
+        </div>
+        <div class="summary-col">
+            <div class="summary">
+                <h3>Order Summary</h3>
+                <p>Subtotal: <span id="subtotal">$0.00</span></p>
+                <p>Shipping: <span id="shipping">$0.00</span></p>
+                <p>Discount: <span id="discount">$0.00</span></p>
+                <p><strong>Grand Total: <span id="grand-total">$0.00</span></strong></p>
+            </div>
+            <div id="klarna-express-container"></div>
+        </div>
+    </div>
+    <div class="response-table-container">
+        <table id="response-table" class="table" style="display:none;">
+            <thead>
+                <tr>
+                    <th>Field</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <nav class="bottom-nav">
+        <div class="nav-links">
+            <a href="../index.html">Home</a>
+            <a href="../about.html">About</a>
+            <a href="klarna-tools.html">Klarna Tools</a>
+        </div>
+        <div class="social-links">
+            <a href="https://github.com/thejinghao" target="_blank" title="GitHub">
+                <i class="fab fa-github"></i>
+            </a>
+            <a href="https://linkedin.com/in/thejinghao" target="_blank" title="LinkedIn">
+                <i class="fab fa-linkedin"></i>
+            </a>
+            <a href="https://thejinghao.github.io" target="_blank" title="Portfolio">
+                <i class="fas fa-globe"></i>
+            </a>
+        </div>
+    </nav>
+    <button id="open-admin-modal" class="admin-modal-btn" title="Admin Panel">Admin</button>
+    <div id="admin-modal" class="admin-modal-overlay" style="display:none;">
+        <div class="admin-modal-content">
+            <button id="close-admin-modal" class="close-admin-modal">&times;</button>
+            <h2 class="admin-title">Admin Panel: Edit Basket Items</h2>
+            <form class="admin-form" id="admin-form"></form>
+        </div>
+    </div>
+    <script>
+    // --- Sample Basket Data ---
+    const basket = [
+        {
+            id: 1,
+            name: "Wireless Headphones",
+            desc: "Bluetooth, Noise Cancelling",
+            price: 99.99,
+            quantity: 1,
+            image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=200&q=80",
+            klarna_ref: "SKU-HEADPHONES-001"
+        },
+        {
+            id: 2,
+            name: "Smart Watch",
+            desc: "Fitness Tracker, Black",
+            price: 149.99,
+            quantity: 2,
+            image: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=200&q=80",
+            klarna_ref: "SKU-WATCH-002"
+        }
+    ];
+    let shipping = 10.00;
+    let discount = 15.00;
+
+    function renderBasket() {
+        const basketList = document.getElementById('basket-list');
+        basketList.innerHTML = '';
+        basket.forEach((item, idx) => {
+            const div = document.createElement('div');
+            div.className = 'cart-item';
+            div.innerHTML = `
+                <img src="${item.image}" alt="${item.name}" />
+                <div>
+                    <h3 class="product-title">${item.name}</h3>
+                    <p class="product-desc">${item.desc}</p>
+                    <p>Unit Price: <strong>$${item.price.toFixed(2)}</strong></p>
+                    <label>Qty: <input type="number" min="1" value="${item.quantity}" data-idx="${idx}" class="qty-input" style="width:50px;"></label>
+                    <p class="product-price">Line Total: $<span class="line-total">${(item.price * item.quantity).toFixed(2)}</span></p>
+                </div>
+            `;
+            basketList.appendChild(div);
+        });
+        // Add event listeners for quantity changes
+        basketList.querySelectorAll('.qty-input').forEach(input => {
+            input.addEventListener('change', (e) => {
+                let idx = parseInt(e.target.getAttribute('data-idx'));
+                let val = parseInt(e.target.value);
+                if (isNaN(val) || val < 1) val = 1;
+                basket[idx].quantity = val;
+                renderBasket();
+                updateSummary();
+            });
+        });
+    }
+
+    function updateSummary() {
+        let subtotal = basket.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        let grandTotal = subtotal + shipping - discount;
+        document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+        document.getElementById('shipping').textContent = `$${shipping.toFixed(2)}`;
+        // Display discount as negative with brackets
+        document.getElementById('discount').textContent = discount > 0 ? `($${discount.toFixed(2)})` : `$0.00`;
+        document.getElementById('grand-total').textContent = `$${grandTotal.toFixed(2)}`;
+    }
+
+    function getKlarnaOrderLines() {
+        // For demo, assume tax_rate is 0 (0%), so total_tax_amount is 0
+        const tax_rate = 0;
+        const orderLines = basket.map(item => {
+            const unit_price = Math.round(item.price * 100);
+            const total_amount = Math.round(item.price * item.quantity * 100);
+            return {
+                type: "physical",
+                reference: item.klarna_ref,
+                name: item.name,
+                quantity: item.quantity,
+                unit_price,
+                tax_rate,
+                total_amount,
+                total_tax_amount: 0
+            };
+        });
+        // Shipping as order line
+        if (shipping > 0) {
+            orderLines.push({
+                type: "shipping_fee",
+                reference: "SHIPPING",
+                name: "Standard Shipping",
+                quantity: 1,
+                unit_price: Math.round(shipping * 100),
+                tax_rate,
+                total_amount: Math.round(shipping * 100),
+                total_tax_amount: 0
+            });
+        }
+        // Discount as negative order line
+        if (discount > 0) {
+            orderLines.push({
+                type: "discount",
+                reference: "DISCOUNT",
+                name: "Discount",
+                quantity: 1,
+                unit_price: -Math.round(discount * 100),
+                tax_rate,
+                total_amount: -Math.round(discount * 100),
+                total_tax_amount: 0
+            });
+        }
+        return orderLines;
+    }
+    function getKlarnaPayload() {
+        const order_lines = getKlarnaOrderLines();
+        // order_amount should be the sum of all order_lines' total_amount (including shipping and discount lines)
+        const order_amount = order_lines.reduce((sum, l) => sum + l.total_amount, 0);
+        return {
+            purchase_country: "US",
+            purchase_currency: "USD",
+            intent: "buy",
+            locale: "en-US",
+            merchant_reference1: "ORDER-12345",
+            merchant_urls: {
+                authorization: "https://webhook.site/c292a862-2376-4944-aea7-25fcba1ebe7d",
+                confirmation: "https://example.com/confirmation"
+            },
+            order_amount,
+            order_lines
+        };
+    }
+    function showResponseTable(result) {
+        const table = document.getElementById('response-table');
+        const tbody = table.querySelector('tbody');
+        tbody.innerHTML = '';
+        Object.entries(result).forEach(([key, value]) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${key}</td><td><pre style="white-space:pre-wrap;">${typeof value === 'object' ? JSON.stringify(value, null, 2) : value}</pre></td>`;
+            tbody.appendChild(tr);
+        });
+        table.style.display = '';
+    }
+    // --- Klarna Express Checkout Integration ---
+    window.klarnaAsyncCallback = function() {
+        window.Klarna.Payments.Buttons.init({
+            client_key: "klarna_test_client_ZHh4PzVrciRtZWtQTzdSR2RXY0wyYnhQbHBuUjk1OCMsMjllYjEwZGYtOGE5OC00OGFmLWIwMjQtMGViMzFmNjhlNGQwLDEseDNIcWhEdlpZSmNOMXcrTVFPL1p1cXFod2djZEdrUTQ1N055UytJMHhkUT0"
+        }).load({
+            container: "#klarna-express-container",
+            theme: "default",
+            shape: "pill",
+            locale: "en-US",
+            on_click: (authorize) => {
+                const payload = getKlarnaPayload();
+                authorize({
+                    collect_shipping_address: true,
+                    auto_finalize: true
+                }, payload, (result) => {
+                    showResponseTable(result);
+                });
+            }
+        }, function(loadResult) {
+            // Optionally handle load result
+        });
+    };
+    document.addEventListener('DOMContentLoaded', function() {
+        renderBasket();
+        updateSummary();
+    });
+    // Admin modal logic and basket persistence
+    const defaultBasket = [
+        {
+            id: 1,
+            name: "Wireless Headphones",
+            desc: "Bluetooth, Noise Cancelling",
+            price: 99.99,
+            quantity: 1,
+            image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=200&q=80",
+            klarna_ref: "SKU-HEADPHONES-001"
+        },
+        {
+            id: 2,
+            name: "Smart Watch",
+            desc: "Fitness Tracker, Black",
+            price: 149.99,
+            quantity: 2,
+            image: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=200&q=80",
+            klarna_ref: "SKU-WATCH-002"
+        }
+    ];
+    function getBasketFromStorage() {
+        const saved = localStorage.getItem('basket');
+        if (saved) {
+            try { return JSON.parse(saved); } catch { return defaultBasket; }
+        }
+        return defaultBasket;
+    }
+    function setBasketToStorage(basket) {
+        localStorage.setItem('basket', JSON.stringify(basket));
+    }
+    function renderAdminForm() {
+        const basketData = getBasketFromStorage();
+        const form = document.getElementById('admin-form');
+        form.innerHTML = '';
+        // Shipping and Discount fields
+        const shippingBlock = document.createElement('div');
+        shippingBlock.className = 'item-block';
+        shippingBlock.innerHTML = `
+            <label>Shipping ($)
+                <input type="number" name="shipping" value="${shipping}" min="0" step="0.01">
+            </label>
+            <label>Discount ($)
+                <input type="number" name="discount" value="${discount}" min="0" step="0.01">
+            </label>
+        `;
+        form.appendChild(shippingBlock);
+        // Product fields
+        basketData.forEach((item, idx) => {
+            const block = document.createElement('div');
+            block.className = 'item-block';
+            block.innerHTML = `
+                <label>Name
+                    <input type="text" name="name-${idx}" value="${item.name}">
+                </label>
+                <label>Description
+                    <input type="text" name="desc-${idx}" value="${item.desc}">
+                </label>
+                <label>Price
+                    <input type="number" name="price-${idx}" value="${item.price}" min="0" step="0.01">
+                </label>
+                <label>Image Link
+                    <input type="text" name="image-${idx}" value="${item.image}">
+                </label>
+                <img src="${item.image}" alt="Preview" onerror="this.style.display='none'">
+            `;
+            form.appendChild(block);
+        });
+        const saveBtn = document.createElement('button');
+        saveBtn.type = 'submit';
+        saveBtn.textContent = 'Save Changes';
+        form.appendChild(saveBtn);
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        // Modal open/close
+        document.getElementById('open-admin-modal').onclick = function() {
+            renderAdminForm();
+            document.getElementById('admin-modal').style.display = 'flex';
+        };
+        document.getElementById('close-admin-modal').onclick = function() {
+            document.getElementById('admin-modal').style.display = 'none';
+        };
+        document.getElementById('admin-modal').onclick = function(e) {
+            if (e.target === this) this.style.display = 'none';
+        };
+        // Save admin form
+        document.getElementById('admin-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            let basketData = getBasketFromStorage();
+            // Save shipping and discount
+            shipping = parseFloat(this['shipping'].value) || 0;
+            discount = parseFloat(this['discount'].value) || 0;
+            // Save product fields
+            basketData.forEach((item, idx) => {
+                item.name = this[`name-${idx}`].value;
+                item.desc = this[`desc-${idx}`].value;
+                item.price = parseFloat(this[`price-${idx}`].value) || 0;
+                item.image = this[`image-${idx}`].value;
+            });
+            setBasketToStorage(basketData);
+            document.getElementById('admin-modal').style.display = 'none';
+            updateBasketFromStorage();
+            renderBasket();
+            updateSummary();
+        });
+    });
+    // Use basket from storage if available
+    function updateBasketFromStorage() {
+        const newBasket = getBasketFromStorage();
+        basket.length = 0;
+        newBasket.forEach(item => basket.push(item));
+    }
+    // On load, use localStorage basket if present
+    </script>
+    <style>
+    .two-col {
+        display: flex;
+        gap: 32px;
+        align-items: flex-start;
+    }
+    .basket-col {
+        flex: 1 1 0;
+        min-width: 300px;
+    }
+    .summary-col {
+        flex: 0 0 350px;
+        min-width: 300px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+        padding: 24px 18px 18px 18px;
+    }
+    .response-table-container {
+        margin: 32px auto 0 auto;
+        max-width: 800px;
+        overflow-x: auto;
+        width: 100%;
+    }
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        table-layout: fixed;
+        word-break: break-word;
+    }
+    .table th, .table td {
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        text-align: left;
+        font-size: 16px;
+        word-break: break-word;
+        white-space: pre-wrap;
+        max-width: 350px;
+    }
+    .table th {
+        background: #f2f2f2;
+        font-weight: 600;
+    }
+    @media (max-width: 900px) {
+        .response-table-container {
+            max-width: 100vw;
+            padding: 0 8px;
+        }
+        .table th, .table td {
+            font-size: 14px;
+            max-width: 120px;
+        }
+    }
+    .admin-modal-btn {
+        position: fixed;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #222;
+        color: #fff;
+        padding: 12px 24px;
+        border-radius: 0 8px 8px 0;
+        text-decoration: none;
+        font-weight: bold;
+        letter-spacing: 2px;
+        font-size: 18px;
+        z-index: 1001;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border: none;
+        cursor: pointer;
+        writing-mode: vertical-lr;
+        text-orientation: mixed;
+        height: 120px;
+        width: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .admin-modal-btn:hover {
+        background: #007bff;
+    }
+    .admin-modal-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.3);
+        z-index: 1002;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .admin-modal-content {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+        padding: 32px 24px;
+        max-width: 600px;
+        width: 100%;
+        position: relative;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    .close-admin-modal {
+        position: absolute;
+        top: 12px;
+        right: 16px;
+        background: none;
+        border: none;
+        font-size: 28px;
+        color: #888;
+        cursor: pointer;
+    }
+    .admin-title {
+        text-align: center;
+        margin-bottom: 24px;
+    }
+    .admin-form label {
+        display: block;
+        margin-top: 16px;
+        font-weight: 600;
+    }
+    .admin-form input[type="text"],
+    .admin-form input[type="number"] {
+        width: 100%;
+        padding: 8px;
+        margin-top: 4px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    .admin-form img {
+        max-width: 120px;
+        margin-top: 8px;
+        display: block;
+    }
+    .admin-form .item-block {
+        border-bottom: 1px solid #eee;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+    }
+    .admin-form button[type="submit"] {
+        margin-top: 24px;
+        padding: 10px 24px;
+        background: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    .admin-form button[type="submit"]:active {
+        background: #0056b3;
+    }
+    </style>
+</body>
+</html>
