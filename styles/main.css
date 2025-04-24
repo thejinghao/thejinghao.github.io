@@ -21,6 +21,7 @@ section {
     background: white;
     padding: 20px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 32px;
 }
 
 select {
@@ -112,4 +113,77 @@ social-links a {
     .content-left, .content-right {
         gap: 15px;
     }
+}
+
+/* Funky background gradient */
+.funky-bg {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: -1;
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%, #a1c4fd 100%, #c2e9fb 100%);
+    opacity: 0.7;
+    pointer-events: none;
+    animation: bgMove 12s ease-in-out infinite alternate;
+}
+
+@keyframes bgMove {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+
+/* Funky image styles */
+.funky-img {
+    margin: 2rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 1.5px 8px rgba(255, 200, 100, 0.15);
+    background: rgba(255,255,255,0.85);
+    max-width: 350px;
+    transition: transform 0.3s cubic-bezier(.68,-0.55,.27,1.55), box-shadow 0.3s;
+}
+.funky-img img {
+    width: 100%;
+    display: block;
+    border-radius: 18px;
+    filter: saturate(1.2) contrast(1.1) drop-shadow(0 2px 8px #fda08588);
+    transition: transform 0.3s, filter 0.3s;
+}
+.funky-img:hover {
+    transform: scale(1.07) rotate(-2deg);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.22), 0 2px 12px #f6d36588;
+}
+.funky-img:hover img {
+    filter: saturate(1.5) contrast(1.2) drop-shadow(0 4px 16px #fda085cc);
+    transform: scale(1.04) rotate(2deg);
+}
+.rotate-left { transform: rotate(-4deg); }
+.rotate-right { transform: rotate(3deg); }
+
+/* Funky text and emoji sections */
+.epic-intro, .epic-journey, .victory-moment {
+    font-size: 2rem;
+    text-align: center;
+    margin: 1.2rem 0 0.5rem 0;
+    letter-spacing: 0.1em;
+    filter: drop-shadow(0 2px 8px #fda08588);
+}
+
+.epic-text {
+    font-size: 1.15rem;
+    color: #3a3a3a;
+    background: rgba(255,255,255,0.7);
+    border-left: 6px solid #fda085;
+    border-radius: 0 18px 18px 0;
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    box-shadow: 0 2px 8px #f6d36533;
+}
+
+/* Responsive tweaks for funky layout */
+@media (max-width: 700px) {
+    .funky-img { max-width: 98vw; }
+    .epic-text { padding: 1rem 0.5rem; }
 }

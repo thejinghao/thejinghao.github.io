@@ -8,496 +8,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../styles/main.css">
     <link rel="stylesheet" href="../styles/kec.css">
-    
     <script src="https://x.klarnacdn.net/kp/lib/v1/api.js" async></script>
-    <script>
-        window.klarnaAsyncCallback = function() {
-            window.onload = function() {
-                var radios = document.getElementsByName('auto_finalize');
-                // get the default selected value
-                var defaultSelected = document.querySelector('input[name="auto_finalize"]:checked').value;
-                console.log("auto_finalize: ", defaultSelected);
-                for (var i = 0, length = radios.length; i < length; i++) {
-                    radios[i].onclick = function() {
-                        var autoFinalizeValue = this.value;
-                        console.log("auto_finalize: ", autoFinalizeValue); // print the value to the console
-                    }
-                }
-            }
-            window.Klarna.Payments.Buttons.init({
-                client_key: "klarna_test_client_bVUhc1k2QkxKNmNnTXhFZHl4Nz9sN1F6Z20yT1UxT2IsNzkyNjY3YjAtYmE0OC00ZGFjLThkYjQtMjRjZTBkOTU5ZTkxLDEsTGRZUGcveG9yUThrcGY4VkRScEZ0RmhsOEpnVC9Nd2dHRy95L0gxMDJVMD0",
-            }).load({
-                container: "#container",
-                theme: "dark",
-                shape: "pill",
-                locale: "en-US",
-                on_click: (authorize) => {
-                    var order_payload = {
-                        "purchase_country": "US",
-                        "purchase_currency": "USD",
-                        "intent": "buy_and_default_tokenize",
-                        "locale": "en-US",
-                        "merchant_reference1": "12142424",
-                        "merchant_reference2": "phe2323",
-                        "merchant_urls": {
-                            "authorization": "https://webhook.site/c292a862-2376-4944-aea7-25fcba1ebe7d",
-                            "confirmation": "https://example.com/confirmation"
-                        },
-                        "order_amount": 19092,
-                        "order_lines": [{
-                            "product_url": "https://www.nike.com/gb/t/sportswear-max90-t-shirt-k69CPJ/FD1303-010",
-                            "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                            "type": "physical",
-                            "reference": "XEUCND20100RIQ1O71",
-                            "name": "Nike Sportswear - Men's Max90 T-shirt",
-                            "total_discount_amount": 499,
-                            "quantity": 1,
-                            "unit_price": 3597,
-                            "total_amount": 3098
-                        },
-                        {
-                            "product_url": "https://www.nike.com/gb/t/zoom-fly-5-road-running-shoes-p5TWL7/DM8968-600",
-                            "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                            "type": "physical",
-                            "reference": "XEUCND20100RIQ1O71",
-                            "name": "Nike Zoom Fly 5 - Men's Road Running Shoes",
-                            "quantity": 1,
-                            "unit_price": 15495,
-                            "total_amount": 15495
-                        },
-                        {
-                            "type": "shipping_fee",
-                            "name": "Shipping Fee",
-                            "quantity": 1,
-                            "unit_price": 499,
-                            "total_amount": 499
-                        }
-                        ]
-                    };
-                    var autoFinalizeValue = document.querySelector('input[name="auto_finalize"]:checked').value;
-                    console.log("autoFinalizeValue: ", autoFinalizeValue); // print the value to the console
-                    authorize({
-                        collect_shipping_address: true,
-                        auto_finalize: autoFinalizeValue === "true"
-                    },
-                    order_payload,
-                    (result) => {
-                        document.getElementById('authorize-results').style.display = 'table';
-                        document.getElementById('client_token').textContent = result.client_token
-                        document.getElementById('authorization_token').textContent = result.authorization_token
-                        document.getElementById('approved').textContent = result.approved
-                        document.getElementById('collected_shipping_address').textContent = JSON.stringify(result.collected_shipping_address)
-                        document.getElementById('finalize_required').textContent = result.finalize_required
-                        console.log('authorize result', result),
-                        console.log('authorize client_token:', result.client_token),
-                        console.log('authorize authorization_token:', result.authorization_token),
-                        console.log('authorize approved:', result.approved),
-                        console.log('authorize collected_shipping_address:', result.collected_shipping_address),
-                        console.log('authorize: finalize_required:', result.finalize_required)
-                        var isApproved = result.approved;
-                        var authorizationTokenNotEmpty = (result.authorization_token !== "");
-                        var isFinalizedRequired = result.finalize_required
-                        if (isApproved && authorizationTokenNotEmpty && !isFinalizedRequired) {
-                            // create success message
-                            var message = document.createElement('p');
-                            message.textContent = 'Authorization Finalized!';
-                            message.style.color = 'green';
-                            message.style.fontSize = '1.2rem';
-                            message.style.fontWeight = 'bold';
-                            // Select the messageContainer and append the success message
-                            var messageContainer = document.getElementById('message-container');
-                            messageContainer.appendChild(message);
-                        }
-                        if (result.finalize_required) {
-                            var btnContainer = document.querySelector('.mt-5');
-                            var finalizeBtn = document.createElement('button');
-                            btnContainer.style.marginTop = '10px';
-                            finalizeBtn.textContent = 'Place Order // finalize()';
-                            finalizeBtn.style.backgroundColor = 'black';
-                            finalizeBtn.style.color = 'white';
-                            finalizeBtn.style.width = '325px'; // button width
-                            finalizeBtn.style.height = '50px'; // button height
-                            finalizeBtn.style.marginBottom = '20px';
-                            finalizeBtn.style.border = 'none'; // removes the border
-                            finalizeBtn.style.boxShadow = '5px 5px 10px rgba(0, 0, 0, .25)';
-                            finalizeBtn.style.borderRadius = '25px';
-                            finalizeBtn.style.fontWeight = 'bold';
-                            document.querySelector('.payloadOptions').style.display = 'block';
-                            finalizeBtn.onclick = function() {
-                                var selectedOption = document.querySelector('input[name="payload_option"]:checked').value;
-                                var payload1 = {
-                                    "purchase_country": "US",
-                                    "purchase_currency": "USD",
-                                    "locale": "en-US",
-                                    "merchant_reference1": "12142424",
-                                    "merchant_reference2": "phe2323",
-                                    "merchant_urls": {
-                                        "authorization": "https://webhook.site/c292a862-2376-4944-aea7-25fcba1ebe7d"
-                                    },
-                                    "order_amount": 19092,
-                                    "order_lines": [{
-                                        "product_url": "https://www.nike.com/gb/t/sportswear-max90-t-shirt-k69CPJ/FD1303-010",
-                                        "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                        "type": "physical",
-                                        "reference": "XEUCND20100RIQ1O71",
-                                        "name": "Nike Sportswear - Men's Max90 T-shirt",
-                                        "total_discount_amount": 499,
-                                        "quantity": 1,
-                                        "unit_price": 3597,
-                                        "total_amount": 3098
-                                    },
-                                    {
-                                        "product_url": "https://www.nike.com/gb/t/zoom-fly-5-road-running-shoes-p5TWL7/DM8968-600",
-                                        "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                        "type": "physical",
-                                        "reference": "XEUCND20100RIQ1O71",
-                                        "name": "Nike Zoom Fly 5 - Men's Road Running Shoes",
-                                        "quantity": 1,
-                                        "unit_price": 15495,
-                                        "total_amount": 15495
-                                    },
-                                    {
-                                        "type": "shipping_fee",
-                                        "name": "Standard Delivery",
-                                        "quantity": 1,
-                                        "unit_price": 499,
-                                        "total_amount": 499
-                                    }
-                                    ]
-                                };
-                                var payload2 = {
-                                    "purchase_country": "US",
-                                    "purchase_currency": "USD",
-                                    "locale": "en-US",
-                                    "merchant_reference1": "12142424",
-                                    "merchant_reference2": "phe2323",
-                                    "merchant_urls": {
-                                        "authorization": "https://webhook.site/c292a862-2376-4944-aea7-25fcba1ebe7d"
-                                    },
-                                    "order_amount": 20000,
-                                    "order_lines": [{
-                                        "product_url": "https://www.nike.com/gb/t/sportswear-max90-t-shirt-k69CPJ/FD1303-010",
-                                        "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                        "type": "physical",
-                                        "reference": "XEUCND20100RIQ1O71",
-                                        "name": "Nike Sportswear - Men's Max90 T-shirt",
-                                        "total_discount_amount": 499,
-                                        "quantity": 1,
-                                        "unit_price": 3597,
-                                        "total_amount": 3098
-                                    },
-                                    {
-                                        "product_url": "https://www.nike.com/gb/t/zoom-fly-5-road-running-shoes-p5TWL7/DM8968-600",
-                                        "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                        "type": "physical",
-                                        "reference": "XEUCND20100RIQ1O71",
-                                        "name": "Nike Zoom Fly 5 - Men's Road Running Shoes",
-                                        "quantity": 1,
-                                        "unit_price": 15495,
-                                        "total_amount": 15495
-                                    },
-                                    {
-                                        "type": "shipping_fee",
-                                        "name": "Next Day Delivery",
-                                        "quantity": 1,
-                                        "unit_price": 1407,
-                                        "total_amount": 1407
-                                    }
-                                    ]
-                                };
-                                var payload3 = {
-                                    "purchase_country": "US",
-                                    "purchase_currency": "USD",
-                                    "locale": "en-US",
-                                    "merchant_reference1": "12142424",
-                                    "merchant_reference2": "phe2323",
-                                    "merchant_urls": {
-                                        "authorization": "https://webhook.site/c292a862-2376-4944-aea7-25fcba1ebe7d"
-                                    },
-                                    "order_amount": 90000,
-                                    "order_lines": [{
-                                        "product_url": "https://www.nike.com/gb/t/sportswear-max90-t-shirt-k69CPJ/FD1303-010",
-                                        "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                        "type": "physical",
-                                        "reference": "XEUCND20100RIQ1O71",
-                                        "name": "Nike Sportswear - Men's Max90 T-shirt",
-                                        "total_discount_amount": 499,
-                                        "quantity": 1,
-                                        "unit_price": 3597,
-                                        "total_amount": 3098
-                                    },
-                                    {
-                                        "product_url": "https://www.nike.com/gb/t/zoom-fly-5-road-running-shoes-p5TWL7/DM8968-600",
-                                        "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                        "type": "physical",
-                                        "reference": "XEUCND20100RIQ1O71",
-                                        "name": "Nike Zoom Fly 5 - Men's Road Running Shoes",
-                                        "quantity": 1,
-                                        "unit_price": 15495,
-                                        "total_amount": 15495
-                                    },
-                                    {
-                                        "product_url": "https://www.nike.com/gb/t/zoom-fly-5-road-running-shoes-p5TWL7/DM8968-600",
-                                        "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                        "type": "physical",
-                                        "reference": "XEUCND20100RIQ13456",
-                                        "name": "Nike Zoom Fly 5 - Women's Road Running Shoes",
-                                        "quantity": 1,
-                                        "unit_price": 70000,
-                                        "total_amount": 70000
-                                    },
-                                    {
-                                        "type": "shipping_fee",
-                                        "name": "Next Day Delivery",
-                                        "quantity": 1,
-                                        "unit_price": 1407,
-                                        "total_amount": 1407
-                                    }
-                                    ]
-                                };
-                                var payload4 = {
-                                    "purchase_country": "US",
-                                    "purchase_currency": "USD",
-                                    "locale": "en-US",
-                                    "merchant_reference1": "12142424",
-                                    "merchant_reference2": "phe2323",
-                                    "merchant_urls": {
-                                        "authorization": "https://webhook.site/c292a862-2376-4944-aea7-25fcba1ebe7d"
-                                    },
-                                    "order_amount": 110000,
-                                    "order_lines": [{
-                                        "product_url": "https://www.nike.com/gb/t/sportswear-max90-t-shirt-k69CPJ/FD1303-010",
-                                        "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                        "type": "physical",
-                                        "reference": "XEUCND20100RIQ1O71",
-                                        "name": "Nike Sportswear - Men's Max90 T-shirt",
-                                        "total_discount_amount": 499,
-                                        "quantity": 1,
-                                        "unit_price": 3597,
-                                        "total_amount": 3098
-                                    },
-                                    {
-                                        "product_url": "https://www.nike.com/gb/t/sportswear-max90-t-shirt-k69CPJ/FD1303-010",
-                                        "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                        "type": "physical",
-                                        "reference": "XEUCND20100RI30987",
-                                        "name": "Nike Sportswear - Women's Max90 T-shirt",
-                                        "quantity": 1,
-                                        "unit_price": 20000,
-                                        "total_amount": 20000
-                                    },
-                                    {
-                                        "product_url": "https://www.nike.com/gb/t/zoom-fly-5-road-running-shoes-p5TWL7/DM8968-600",
-                                        "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                        "type": "physical",
-                                        "reference": "XEUCND20100RIQ1O71",
-                                        "name": "Nike Zoom Fly 5 - Men's Road Running Shoes",
-                                        "quantity": 1,
-                                        "unit_price": 15495,
-                                        "total_amount": 15495
-                                    },
-                                    {
-                                        "product_url": "https://www.nike.com/gb/t/zoom-fly-5-road-running-shoes-p5TWL7/DM8968-600",
-                                        "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                        "type": "physical",
-                                        "reference": "XEUCND20100RIQ13456",
-                                        "name": "Nike Zoom Fly 5 - Women's Road Running Shoes",
-                                        "quantity": 1,
-                                        "unit_price": 70000,
-                                        "total_amount": 70000
-                                    },
-                                    {
-                                        "type": "shipping_fee",
-                                        "name": "Next Day Delivery",
-                                        "quantity": 1,
-                                        "unit_price": 1407,
-                                        "total_amount": 1407
-                                    }
-                                    ]
-                                };
-                                var payload5 = {
-                                    "purchase_country": "US",
-                                    "purchase_currency": "USD",
-                                    "locale": "en-US",
-                                    "merchant_reference1": "12142424",
-                                    "merchant_reference2": "phe2323",
-                                    "merchant_urls": {
-                                        "authorization": "https://webhook.site/c292a862-2376-4944-aea7-25fcba1ebe7d"
-                                    },
-                                    "order_amount": 410000,
-                                    "order_lines": [{
-                                        "product_url": "https://www.nike.com/gb/t/sportswear-max90-t-shirt-k69CPJ/FD1303-010",
-                                        "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                        "type": "physical",
-                                        "reference": "XEUCND20100RIQ1O71",
-                                        "name": "Nike Sportswear - Men's Max90 T-shirt",
-                                        "total_discount_amount": 499,
-                                        "quantity": 1,
-                                        "unit_price": 3597,
-                                        "total_amount": 3098
-                                    },
-                                    {
-                                        "product_url": "https://www.nike.com/gb/t/sportswear-max90-t-shirt-k69CPJ/FD1303-010",
-                                        "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                        "type": "physical",
-                                        "reference": "XEUCND20100RI30987",
-                                        "name": "Nike Sportswear - Women's Max90 T-shirt",
-                                        "quantity": 16,
-                                        "unit_price": 20000,
-                                        "total_amount": 320000
-                                    },
-                                    {
-                                        "product_url": "https://www.nike.com/gb/t/zoom-fly-5-road-running-shoes-p5TWL7/DM8968-600",
-                                        "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                        "type": "physical",
-                                        "reference": "XEUCND20100RIQ1O71",
-                                        "name": "Nike Zoom Fly 5 - Men's Road Running Shoes",
-                                        "quantity": 1,
-                                        "unit_price": 15495,
-                                        "total_amount": 15495
-                                    },
-                                    {
-                                        "product_url": "https://www.nike.com/gb/t/zoom-fly-5-road-running-shoes-p5TWL7/DM8968-600",
-                                        "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                        "type": "physical",
-                                        "reference": "XEUCND20100RIQ13456",
-                                        "name": "Nike Zoom Fly 5 - Women's Road Running Shoes",
-                                        "quantity": 1,
-                                        "unit_price": 70000,
-                                        "total_amount": 70000
-                                    },
-                                    {
-                                        "type": "shipping_fee",
-                                        "name": "Next Day Delivery",
-                                        "quantity": 1,
-                                        "unit_price": 1407,
-                                        "total_amount": 1407
-                                    }
-                                    ]
-                                };
-                                var payload6 = {
-                                    "purchase_country": "CA",
-                                    "purchase_currency": "CAD",
-                                    "locale": "es-CA",
-                                    "merchant_reference1": "12142424",
-                                    "merchant_reference2": "phe2323",
-                                    "merchant_urls": {
-                                        "authorization": "https://webhook.site/c292a862-2376-4944-aea7-25fcba1ebe7d"
-                                    },
-                                    "order_amount": 19092,
-                                    "order_lines": [{
-                                        "product_url": "https://www.nike.com/gb/t/sportswear-max90-t-shirt-k69CPJ/FD1303-010",
-                                        "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                        "type": "physical",
-                                        "reference": "XEUCND20100RIQ1O71",
-                                        "name": "Nike Sportswear - Men's Max90 T-shirt",
-                                        "total_discount_amount": 499,
-                                        "quantity": 1,
-                                        "unit_price": 3597,
-                                        "total_amount": 3098
-                                    },
-                                    {
-                                        "product_url": "https://www.nike.com/gb/t/zoom-fly-5-road-running-shoes-p5TWL7/DM8968-600",
-                                        "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                        "type": "physical",
-                                        "reference": "XEUCND20100RIQ1O71",
-                                        "name": "Nike Zoom Fly 5 - Men's Road Running Shoes",
-                                        "quantity": 1,
-                                        "unit_price": 15495,
-                                        "total_amount": 15495
-                                    },
-                                    {
-                                        "type": "shipping_fee",
-                                        "name": "Standard Delivery",
-                                        "quantity": 1,
-                                        "unit_price": 499,
-                                        "total_amount": 499
-                                    }
-                                    ]
-                                };
-                                var payloads = {
-                                    'option1': payload1,
-                                    'option2': payload2,
-                                    'option3': payload3,
-                                    'option4': payload4,
-                                    'option5': payload5,
-                                    'option6': payload6,
-                                }
-                                var selectedPayload = payloads[selectedOption];
-                                Klarna.Payments.finalize({}, selectedPayload, function(res) {
-                                    console.log('res', res)
-                                    document.getElementById('client_token').textContent = res.client_token
-                                    document.getElementById('authorization_token').textContent = res.authorization_token
-                                    document.getElementById('approved').textContent = res.approved
-                                    document.getElementById('collected_shipping_address').textContent = JSON.stringify(res.collected_shipping_address)
-                                    document.getElementById('finalize_required').textContent = res.finalize_required
-                                    var authorizationTokenNotEmpty = (res.authorization_token !== "");
-                                    if (res.approved && !res.finalize_required && authorizationTokenNotEmpty) {
-                                        finalizeBtn.style.display = 'none'; // hide the button
-                                        document.querySelector('.payloadOptions').style.display = 'none'; // hide payload options
-                                        // Creating a success message 
-                                        var message = document.createElement('p');
-                                        message.textContent = 'Authorization Finalized!';
-                                        message.style.color = 'green';
-                                        message.style.fontSize = '1.2rem';
-                                        message.style.fontWeight = 'bold';
-                                        // append the success message to the finalize button's parent
-                                        finalizeBtn.parentNode.insertBefore(message, finalizeBtn.nextSibling);
-                                    }
-                                });
-                            };
-                            btnContainer.insertBefore(finalizeBtn, document.getElementById('authorize-results'));
-                        }
-                    },
-                    );
-                },
-            },
-            function load_callback(loadResult) {
-                console.log('loadResult', loadResult),
-                console.log('loadResult show_form:', loadResult.show_form),
-                console.log('loadResult error:', loadResult.error)
-            },
-            );
-        };
-        Klarna.Payments.init({
-            client_token: result.client_token
-        });
-    </script>
 </head>
-
 <body>
     <header>
         <h1>Klarna Express Checkout Demo</h1>
     </header>
-
     <div class="container">
         <h1>Shopping Cart</h1>
-        
-        <div class="cart-item">
-            <img src="https://res.cloudinary.com/mybobs/image/upload/c_scale,w_200/20091858_gallery_01_wide" alt="Table Lamp" />
-            <div>
-                <h2 class="product-title">Ezra Silver & Black Table Lamp</h2>
-                <h3 class="product-desc">Dimensions: 13.5"W x 21.3"H</h3>
-                <p class="product-price">$35.97</p>
-            </div>
-        </div>
-
-        <div class="cart-item">
-            <img src="https://res.cloudinary.com/mybobs/image/upload/c_scale,w_200/20061751067_gallery_01_wide" alt="Nightstand" />
-            <div>
-                <h2 class="product-title">Fusion Black & Gray 2 Drawer Nightstand</h2>
-                <h3 class="product-desc">Dimensions: 25"W x 16"D x 23"H</h3>
-                <p class="product-price">$154.95</p>
-            </div>
-        </div>
-
+        <div id="cart-list"></div>
         <div class="summary">
             <h2>Order Summary</h2>
-            <p>Subtotal: $190.92</p>
-            <p>Discount: $4.99</p>
-            <p>Shipping Fee: $4.99</p>
-            <p>Grand Total: $190.92</p>
-
+            <p>Subtotal: <span id="subtotal">$0.00</span></p>
+            <p>Discount: <span id="discount">$0.00</span></p>
+            <p>Shipping Fee: <span id="shipping">$0.00</span></p>
+            <p>Grand Total: <span id="grand-total">$0.00</span></p>
             <div class="auto-finalize">
                 <div class="auto-finalize-options">
                     <h3>auto_finalize:</h3>
@@ -509,43 +34,11 @@
             </div>
             <div id="container"></div>
         </div>
-
         <div id="message-container"></div>
         <div class="payloadOptions" style="display: none;">
             <h1>Review Your Order</h1>
-            <div class="payload-options">
-                <div>
-                    <input type="radio" id="payload_option1" name="payload_option" value="option1" checked>
-                    <label for="payload_option1">Keep using the same payload sent with authorize (order_amount:
-                        $190.92)</label>
-                </div>
-
-                <div style="margin-top: 20px !important">
-                    <input type="radio" id="payload_option2" name="payload_option" value="option2">
-                    <label for="payload_option2">Increase order_amount to $200 (e.g. update delivery option)</label>
-                </div>
-
-                <div style="margin-top: 20px !important">
-                    <input type="radio" id="payload_option3" name="payload_option" value="option3">
-                    <label for="payload_option3">Increase order_amount to $900 </label>
-                </div>
-
-                <div style="margin-top: 20px !important">
-                    <input type="radio" id="payload_option4" name="payload_option" value="option4">
-                    <label for="payload_option4">Increase order_amount to $1100 </label>
-                </div>
-                <div style="margin-top: 20px !important">
-                    <input type="radio" id="payload_option5" name="payload_option" value="option5">
-                    <label for="payload_option5">Increase order_amount to $4100 </label>
-                </div>
-
-                <div style="margin-top: 20px !important">
-                    <input type="radio" id="payload_option6" name="payload_option" value="option6">
-                    <label for="payload_option6">Change purchase_country and purchase_currency (From en-US to ES-EUR) (Not supported)</label>
-                </div>
-            </div>
+            <div class="payload-options" id="payload-options-list"></div>
         </div>
-
         <div class="container mt-5 table-container">
             <table id="authorize-results" class="table table-striped" style="display: none;">
                 <thead>
@@ -584,7 +77,6 @@
             </table>
         </div>
     </div>
-
     <nav class="bottom-nav">
         <div class="nav-links">
             <a href="../index.html">Home</a>
@@ -603,578 +95,251 @@
             </a>
         </div>
     </nav>
-
-    <div class="overlay" id="overlay"></div>
-    <div class="edit-panel" id="editPanel">
-        <h3>Edit Item</h3>
-        <div class="form-group">
-            <label for="editTitle">Title</label>
-            <input type="text" id="editTitle" readonly>
-        </div>
-        <div class="form-group">
-            <label for="editPrice">Price ($)</label>
-            <input type="number" id="editPrice" step="0.01" min="0">
-        </div>
-        <div class="buttons">
-            <button class="cancel-btn" onclick="closeEditPanel()">Cancel</button>
-            <button class="save-btn" onclick="saveItem()">Save</button>
-        </div>
-    </div>
-
     <script>
-        // Console logging functionality
-        const originalConsole = {
-            log: console.log,
-            error: console.error,
-            warn: console.warn,
-            debug: console.debug
-        };
-
-        function logToPanel(message, type = 'info') {
-            const consoleContent = document.getElementById('consoleContent');
-            const logElement = document.createElement('div');
-            logElement.className = `console-log ${type}`;
-            logElement.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-            consoleContent.appendChild(logElement);
-            consoleContent.scrollTop = consoleContent.scrollHeight;
+    // --- Dynamic Cart and Klarna Payload Logic ---
+    const cart = [
+        {
+            id: 1,
+            name: "Ezra Silver & Black Table Lamp",
+            desc: "Dimensions: 13.5\"W x 21.3\"H",
+            price: 35.97,
+            quantity: 1,
+            image: "https://res.cloudinary.com/mybobs/image/upload/c_scale,w_200/20091858_gallery_01_wide",
+            product_url: "https://www.nike.com/gb/t/sportswear-max90-t-shirt-k69CPJ/FD1303-010",
+            klarna_ref: "XEUCND20100RIQ1O71"
+        },
+        {
+            id: 2,
+            name: "Fusion Black & Gray 2 Drawer Nightstand",
+            desc: "Dimensions: 25\"W x 16\"D x 23\"H",
+            price: 154.95,
+            quantity: 1,
+            image: "https://res.cloudinary.com/mybobs/image/upload/c_scale,w_200/20061751067_gallery_01_wide",
+            product_url: "https://www.nike.com/gb/t/zoom-fly-5-road-running-shoes-p5TWL7/DM8968-600",
+            klarna_ref: "XEUCND20100RIQ1O71"
         }
-
-        // Override console methods
-        console.log = function(...args) {
-            originalConsole.log.apply(console, args);
-            logToPanel(args.join(' '), 'info');
-        };
-
-        console.error = function(...args) {
-            originalConsole.error.apply(console, args);
-            logToPanel(args.join(' '), 'error');
-        };
-
-        console.warn = function(...args) {
-            originalConsole.warn.apply(console, args);
-            logToPanel(args.join(' '), 'warn');
-        };
-
-        console.debug = function(...args) {
-            originalConsole.debug.apply(console, args);
-            logToPanel(args.join(' '), 'debug');
-        };
-
-        function toggleConsole() {
-            const panel = document.getElementById('consolePanel');
-            panel.classList.toggle('active');
-        }
-
-        let currentEditingItem = null;
-
-        function openEditPanel(itemId) {
-            const item = document.querySelector(`.cart-item[data-id="${itemId}"]`);
-            const title = item.querySelector('.product-title').textContent;
-            const price = item.querySelector('.product-price').textContent.replace('$', '');
-            
-            document.getElementById('editTitle').value = title;
-            document.getElementById('editPrice').value = price;
-            document.getElementById('editPanel').style.display = 'block';
-            document.getElementById('overlay').style.display = 'block';
-            currentEditingItem = itemId;
-            console.log(`Opening edit panel for item ${itemId}`);
-        }
-
-        function closeEditPanel() {
-            document.getElementById('editPanel').style.display = 'none';
-            document.getElementById('overlay').style.display = 'none';
-            currentEditingItem = null;
-            console.log('Edit panel closed');
-        }
-
-        function saveItem() {
-            if (!currentEditingItem) return;
-            
-            const newPrice = parseFloat(document.getElementById('editPrice').value);
-            if (isNaN(newPrice) || newPrice < 0) {
-                console.error('Invalid price entered');
-                alert('Please enter a valid price');
-                return;
-            }
-
-            const item = document.querySelector(`.cart-item[data-id="${currentEditingItem}"]`);
-            item.querySelector('.product-price').textContent = `$${newPrice.toFixed(2)}`;
-            
-            updateTotals();
-            closeEditPanel();
-            console.log(`Price updated for item ${currentEditingItem} to $${newPrice.toFixed(2)}`);
-        }
-
-        // Update totals when the page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            updateTotals();
-            console.log('Page loaded, totals updated');
+    ];
+    let discount = 4.99;
+    let shipping = 4.99;
+    function renderCart() {
+        const cartList = document.getElementById('cart-list');
+        cartList.innerHTML = '';
+        cart.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'cart-item';
+            div.innerHTML = `
+                <img src="${item.image}" alt="${item.name}" />
+                <div>
+                    <h2 class="product-title">${item.name}</h2>
+                    <h3 class="product-desc">${item.desc}</h3>
+                    <p class="product-price">$${(item.price * item.quantity).toFixed(2)}</p>
+                    <label>Qty: <input type="number" min="1" value="${item.quantity}" data-id="${item.id}" class="qty-input" style="width:50px;"></label>
+                </div>
+            `;
+            cartList.appendChild(div);
         });
-
-        function updateTotals() {
-            const items = document.querySelectorAll('.cart-item');
-            let subtotal = 0;
-            
-            items.forEach(item => {
-                const priceText = item.querySelector('.product-price').textContent;
-                const price = parseFloat(priceText.replace('$', ''));
-                subtotal += price;
+        document.querySelectorAll('.qty-input').forEach(input => {
+            input.addEventListener('change', function() {
+                const id = parseInt(this.getAttribute('data-id'));
+                const val = Math.max(1, parseInt(this.value));
+                const prod = cart.find(i => i.id === id);
+                prod.quantity = val;
+                renderCart();
+                updateSummary();
             });
-
-            const discount = 4.99;
-            const shipping = 4.99;
-            const grandTotal = subtotal - discount + shipping;
-
-            document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
-            document.getElementById('grand-total').textContent = `$${grandTotal.toFixed(2)}`;
-            console.log(`Totals updated - Subtotal: $${subtotal.toFixed(2)}, Grand Total: $${grandTotal.toFixed(2)}`);
-        }
-
-        window.klarnaAsyncCallback = function() {
-            window.onload = function() {
-                var radios = document.getElementsByName('auto_finalize');
-                var defaultSelected = document.querySelector('input[name="auto_finalize"]:checked').value;
-                console.log("auto_finalize: ", defaultSelected);
-                for (var i = 0, length = radios.length; i < length; i++) {
-                    radios[i].onclick = function() {
-                        var autoFinalizeValue = this.value;
-                        console.log("auto_finalize: ", autoFinalizeValue);
-                    }
-                }
+        });
+    }
+    function updateSummary() {
+        let subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        let grandTotal = subtotal - discount + shipping;
+        document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+        document.getElementById('discount').textContent = `$${discount.toFixed(2)}`;
+        document.getElementById('shipping').textContent = `$${shipping.toFixed(2)}`;
+        document.getElementById('grand-total').textContent = `$${grandTotal.toFixed(2)}`;
+    }
+    function getKlarnaOrderLines() {
+        return cart.map(item => ({
+            product_url: item.product_url,
+            image_url: item.image,
+            type: "physical",
+            reference: item.klarna_ref,
+            name: item.name,
+            quantity: item.quantity,
+            unit_price: Math.round(item.price * 100),
+            total_amount: Math.round(item.price * item.quantity * 100)
+        })).concat([
+            {
+                type: "shipping_fee",
+                name: shipping > 0 ? (shipping > 5 ? "Next Day Delivery" : "Standard Delivery") : "Free Shipping",
+                quantity: 1,
+                unit_price: Math.round(shipping * 100),
+                total_amount: Math.round(shipping * 100)
             }
-            window.Klarna.Payments.Buttons.init({
-                client_key: "klarna_test_client_bVUhc1k2QkxKNmNnTXhFZHl4Nz9sN1F6Z20yT1UxT2IsNzkyNjY3YjAtYmE0OC00ZGFjLThkYjQtMjRjZTBkOTU5ZTkxLDEsTGRZUGcveG9yUThrcGY4VkRScEZ0RmhsOEpnVC9Nd2dHRy95L0gxMDJVMD0",
-            }).load({
-                container: "#container",
-                theme: "dark",
-                shape: "pill",
-                locale: "en-US",
-                on_click: (authorize) => {
-                    var order_payload = {
-                        "purchase_country": "US",
-                        "purchase_currency": "USD",
-                        "intent": "buy_and_default_tokenize",
-                        "locale": "en-US",
-                        "merchant_reference1": "12142424",
-                        "merchant_reference2": "phe2323",
-                        "merchant_urls": {
-                            "authorization": "https://webhook.site/c292a862-2376-4944-aea7-25fcba1ebe7d",
-                            "confirmation": "https://example.com/confirmation"
-                        },
-                        "order_amount": 19092,
-                        "order_lines": [{
-                                "product_url": "https://www.nike.com/gb/t/sportswear-max90-t-shirt-k69CPJ/FD1303-010",
-                                "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                "type": "physical",
-                                "reference": "XEUCND20100RIQ1O71",
-                                "name": "Nike Sportswear - Men's Max90 T-shirt",
-                                "total_discount_amount": 499,
-                                "quantity": 1,
-                                "unit_price": 3597,
-                                "total_amount": 3098
-                            },
-                            {
-                                "product_url": "https://www.nike.com/gb/t/zoom-fly-5-road-running-shoes-p5TWL7/DM8968-600",
-                                "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                "type": "physical",
-                                "reference": "XEUCND20100RIQ1O71",
-                                "name": "Nike Zoom Fly 5 - Men's Road Running Shoes",
-                                "quantity": 1,
-                                "unit_price": 15495,
-                                "total_amount": 15495
-                            },
-                            {
-                                "type": "shipping_fee",
-                                "name": "Shipping Fee",
-                                "quantity": 1,
-                                "unit_price": 499,
-                                "total_amount": 499
-                            }
-                        ]
-                    };
-                    var autoFinalizeValue = document.querySelector('input[name="auto_finalize"]:checked').value;
-                    console.log("autoFinalizeValue: ", autoFinalizeValue);
-                    authorize({
-                            collect_shipping_address: true,
-                            auto_finalize: autoFinalizeValue === "true"
-                        },
-                        order_payload,
-                        (result) => {
-                            document.getElementById('authorize-results').style.display = 'table';
-                            document.getElementById('client_token').textContent = result.client_token
-                            document.getElementById('authorization_token').textContent = result.authorization_token
-                            document.getElementById('approved').textContent = result.approved
-                            document.getElementById('collected_shipping_address').textContent = JSON.stringify(result.collected_shipping_address)
-                            document.getElementById('finalize_required').textContent = result.finalize_required
-                            console.log('authorize result', result),
-                                console.log('authorize client_token:', result.client_token),
-                                console.log('authorize authorization_token:', result.authorization_token),
-                                console.log('authorize approved:', result.approved),
-                                console.log('authorize collected_shipping_address:', result.collected_shipping_address),
-                                console.log('authorize: finalize_required:', result.finalize_required)
-                            var isApproved = result.approved;
-                            var authorizationTokenNotEmpty = (result.authorization_token !== "");
-                            var isFinalizedRequired = result.finalize_required
-                            if (isApproved && authorizationTokenNotEmpty && !isFinalizedRequired) {
-                                var message = document.createElement('p');
-                                message.textContent = 'Authorization Finalized!';
-                                message.style.color = 'green';
-                                message.style.fontSize = '1.2rem';
-                                message.style.fontWeight = 'bold';
-                                var messageContainer = document.getElementById('message-container');
-                                messageContainer.appendChild(message);
-                            }
-                            if (result.finalize_required) {
-                                var btnContainer = document.querySelector('.mt-5');
-                                var finalizeBtn = document.createElement('button');
-                                btnContainer.style.marginTop = '10px';
-                                finalizeBtn.textContent = 'Place Order // finalize()';
-                                finalizeBtn.style.backgroundColor = 'black';
-                                finalizeBtn.style.color = 'white';
-                                finalizeBtn.style.width = '325px';
-                                finalizeBtn.style.height = '50px';
-                                finalizeBtn.style.marginBottom = '20px';
-                                finalizeBtn.style.border = 'none';
-                                finalizeBtn.style.boxShadow = '5px 5px 10px rgba(0, 0, 0, .25)';
-                                finalizeBtn.style.borderRadius = '25px';
-                                finalizeBtn.style.fontWeight = 'bold';
-                                document.querySelector('.payloadOptions').style.display = 'block';
-                                finalizeBtn.onclick = function() {
-                                    var selectedOption = document.querySelector('input[name="payload_option"]:checked').value;
-                                    var payload1 = {
-                                        "purchase_country": "US",
-                                        "purchase_currency": "USD",
-                                        "locale": "en-US",
-                                        "merchant_reference1": "12142424",
-                                        "merchant_reference2": "phe2323",
-                                        "merchant_urls": {
-                                            "authorization": "https://webhook.site/c292a862-2376-4944-aea7-25fcba1ebe7d"
-                                        },
-                                        "order_amount": 19092,
-                                        "order_lines": [{
-                                                "product_url": "https://www.nike.com/gb/t/sportswear-max90-t-shirt-k69CPJ/FD1303-010",
-                                                "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                                "type": "physical",
-                                                "reference": "XEUCND20100RIQ1O71",
-                                                "name": "Nike Sportswear - Men's Max90 T-shirt",
-                                                "total_discount_amount": 499,
-                                                "quantity": 1,
-                                                "unit_price": 3597,
-                                                "total_amount": 3098
-                                            },
-                                            {
-                                                "product_url": "https://www.nike.com/gb/t/zoom-fly-5-road-running-shoes-p5TWL7/DM8968-600",
-                                                "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                                "type": "physical",
-                                                "reference": "XEUCND20100RIQ1O71",
-                                                "name": "Nike Zoom Fly 5 - Men's Road Running Shoes",
-                                                "quantity": 1,
-                                                "unit_price": 15495,
-                                                "total_amount": 15495
-                                            },
-                                            {
-                                                "type": "shipping_fee",
-                                                "name": "Standard Delivery",
-                                                "quantity": 1,
-                                                "unit_price": 499,
-                                                "total_amount": 499
-                                            }
-                                        ]
-                                    };
-                                    var payload2 = {
-                                        "purchase_country": "US",
-                                        "purchase_currency": "USD",
-                                        "locale": "en-US",
-                                        "merchant_reference1": "12142424",
-                                        "merchant_reference2": "phe2323",
-                                        "merchant_urls": {
-                                            "authorization": "https://webhook.site/c292a862-2376-4944-aea7-25fcba1ebe7d"
-                                        },
-                                        "order_amount": 20000,
-                                        "order_lines": [{
-                                                "product_url": "https://www.nike.com/gb/t/sportswear-max90-t-shirt-k69CPJ/FD1303-010",
-                                                "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                                "type": "physical",
-                                                "reference": "XEUCND20100RIQ1O71",
-                                                "name": "Nike Sportswear - Men's Max90 T-shirt",
-                                                "total_discount_amount": 499,
-                                                "quantity": 1,
-                                                "unit_price": 3597,
-                                                "total_amount": 3098
-                                            },
-                                            {
-                                                "product_url": "https://www.nike.com/gb/t/zoom-fly-5-road-running-shoes-p5TWL7/DM8968-600",
-                                                "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                                "type": "physical",
-                                                "reference": "XEUCND20100RIQ1O71",
-                                                "name": "Nike Zoom Fly 5 - Men's Road Running Shoes",
-                                                "quantity": 1,
-                                                "unit_price": 15495,
-                                                "total_amount": 15495
-                                            },
-                                            {
-                                                "type": "shipping_fee",
-                                                "name": "Next Day Delivery",
-                                                "quantity": 1,
-                                                "unit_price": 1407,
-                                                "total_amount": 1407
-                                            }
-                                        ]
-                                    };
-                                    var payload3 = {
-                                        "purchase_country": "US",
-                                        "purchase_currency": "USD",
-                                        "locale": "en-US",
-                                        "merchant_reference1": "12142424",
-                                        "merchant_reference2": "phe2323",
-                                        "merchant_urls": {
-                                            "authorization": "https://webhook.site/c292a862-2376-4944-aea7-25fcba1ebe7d"
-                                        },
-                                        "order_amount": 90000,
-                                        "order_lines": [{
-                                                "product_url": "https://www.nike.com/gb/t/sportswear-max90-t-shirt-k69CPJ/FD1303-010",
-                                                "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                                "type": "physical",
-                                                "reference": "XEUCND20100RIQ1O71",
-                                                "name": "Nike Sportswear - Men's Max90 T-shirt",
-                                                "total_discount_amount": 499,
-                                                "quantity": 1,
-                                                "unit_price": 3597,
-                                                "total_amount": 3098
-                                            },
-                                            {
-                                                "product_url": "https://www.nike.com/gb/t/zoom-fly-5-road-running-shoes-p5TWL7/DM8968-600",
-                                                "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                                "type": "physical",
-                                                "reference": "XEUCND20100RIQ1O71",
-                                                "name": "Nike Zoom Fly 5 - Men's Road Running Shoes",
-                                                "quantity": 1,
-                                                "unit_price": 15495,
-                                                "total_amount": 15495
-                                            },
-                                            {
-                                                "product_url": "https://www.nike.com/gb/t/zoom-fly-5-road-running-shoes-p5TWL7/DM8968-600",
-                                                "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                                "type": "physical",
-                                                "reference": "XEUCND20100RIQ13456",
-                                                "name": "Nike Zoom Fly 5 - Women's Road Running Shoes",
-                                                "quantity": 1,
-                                                "unit_price": 70000,
-                                                "total_amount": 70000
-                                            },
-                                            {
-                                                "type": "shipping_fee",
-                                                "name": "Next Day Delivery",
-                                                "quantity": 1,
-                                                "unit_price": 1407,
-                                                "total_amount": 1407
-                                            }
-                                        ]
-                                    };
-                                    var payload4 = {
-                                        "purchase_country": "US",
-                                        "purchase_currency": "USD",
-                                        "locale": "en-US",
-                                        "merchant_reference1": "12142424",
-                                        "merchant_reference2": "phe2323",
-                                        "merchant_urls": {
-                                            "authorization": "https://webhook.site/c292a862-2376-4944-aea7-25fcba1ebe7d"
-                                        },
-                                        "order_amount": 110000,
-                                        "order_lines": [{
-                                                "product_url": "https://www.nike.com/gb/t/sportswear-max90-t-shirt-k69CPJ/FD1303-010",
-                                                "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                                "type": "physical",
-                                                "reference": "XEUCND20100RIQ1O71",
-                                                "name": "Nike Sportswear - Men's Max90 T-shirt",
-                                                "total_discount_amount": 499,
-                                                "quantity": 1,
-                                                "unit_price": 3597,
-                                                "total_amount": 3098
-                                            },
-                                            {
-                                                "product_url": "https://www.nike.com/gb/t/sportswear-max90-t-shirt-k69CPJ/FD1303-010",
-                                                "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                                "type": "physical",
-                                                "reference": "XEUCND20100RI30987",
-                                                "name": "Nike Sportswear - Women's Max90 T-shirt",
-                                                "quantity": 1,
-                                                "unit_price": 20000,
-                                                "total_amount": 20000
-                                            },
-                                            {
-                                                "product_url": "https://www.nike.com/gb/t/zoom-fly-5-road-running-shoes-p5TWL7/DM8968-600",
-                                                "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                                "type": "physical",
-                                                "reference": "XEUCND20100RIQ1O71",
-                                                "name": "Nike Zoom Fly 5 - Men's Road Running Shoes",
-                                                "quantity": 1,
-                                                "unit_price": 15495,
-                                                "total_amount": 15495
-                                            },
-                                            {
-                                                "product_url": "https://www.nike.com/gb/t/zoom-fly-5-road-running-shoes-p5TWL7/DM8968-600",
-                                                "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                                "type": "physical",
-                                                "reference": "XEUCND20100RIQ13456",
-                                                "name": "Nike Zoom Fly 5 - Women's Road Running Shoes",
-                                                "quantity": 1,
-                                                "unit_price": 70000,
-                                                "total_amount": 70000
-                                            },
-                                            {
-                                                "type": "shipping_fee",
-                                                "name": "Next Day Delivery",
-                                                "quantity": 1,
-                                                "unit_price": 1407,
-                                                "total_amount": 1407
-                                            }
-                                        ]
-                                    };
-                                    var payload5 = {
-                                        "purchase_country": "US",
-                                        "purchase_currency": "USD",
-                                        "locale": "en-US",
-                                        "merchant_reference1": "12142424",
-                                        "merchant_reference2": "phe2323",
-                                        "merchant_urls": {
-                                            "authorization": "https://webhook.site/c292a862-2376-4944-aea7-25fcba1ebe7d"
-                                        },
-                                        "order_amount": 410000,
-                                        "order_lines": [{
-                                                "product_url": "https://www.nike.com/gb/t/sportswear-max90-t-shirt-k69CPJ/FD1303-010",
-                                                "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                                "type": "physical",
-                                                "reference": "XEUCND20100RIQ1O71",
-                                                "name": "Nike Sportswear - Men's Max90 T-shirt",
-                                                "total_discount_amount": 499,
-                                                "quantity": 1,
-                                                "unit_price": 3597,
-                                                "total_amount": 3098
-                                            },
-                                            {
-                                                "product_url": "https://www.nike.com/gb/t/sportswear-max90-t-shirt-k69CPJ/FD1303-010",
-                                                "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                                "type": "physical",
-                                                "reference": "XEUCND20100RI30987",
-                                                "name": "Nike Sportswear - Women's Max90 T-shirt",
-                                                "quantity": 16,
-                                                "unit_price": 20000,
-                                                "total_amount": 320000
-                                            },
-                                            {
-                                                "product_url": "https://www.nike.com/gb/t/zoom-fly-5-road-running-shoes-p5TWL7/DM8968-600",
-                                                "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                                "type": "physical",
-                                                "reference": "XEUCND20100RIQ1O71",
-                                                "name": "Nike Zoom Fly 5 - Men's Road Running Shoes",
-                                                "quantity": 1,
-                                                "unit_price": 15495,
-                                                "total_amount": 15495
-                                            },
-                                            {
-                                                "product_url": "https://www.nike.com/gb/t/zoom-fly-5-road-running-shoes-p5TWL7/DM8968-600",
-                                                "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                                "type": "physical",
-                                                "reference": "XEUCND20100RIQ13456",
-                                                "name": "Nike Zoom Fly 5 - Women's Road Running Shoes",
-                                                "quantity": 1,
-                                                "unit_price": 70000,
-                                                "total_amount": 70000
-                                            },
-                                            {
-                                                "type": "shipping_fee",
-                                                "name": "Next Day Delivery",
-                                                "quantity": 1,
-                                                "unit_price": 1407,
-                                                "total_amount": 1407
-                                            }
-                                        ]
-                                    };
-                                    var payload6 = {
-                                        "purchase_country": "CA",
-                                        "purchase_currency": "CAD",
-                                        "locale": "es-CA",
-                                        "merchant_reference1": "12142424",
-                                        "merchant_reference2": "phe2323",
-                                        "merchant_urls": {
-                                            "authorization": "https://webhook.site/c292a862-2376-4944-aea7-25fcba1ebe7d"
-                                        },
-                                        "order_amount": 19092,
-                                        "order_lines": [{
-                                                "product_url": "https://www.nike.com/gb/t/sportswear-max90-t-shirt-k69CPJ/FD1303-010",
-                                                "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                                "type": "physical",
-                                                "reference": "XEUCND20100RIQ1O71",
-                                                "name": "Nike Sportswear - Men's Max90 T-shirt",
-                                                "total_discount_amount": 499,
-                                                "quantity": 1,
-                                                "unit_price": 3597,
-                                                "total_amount": 3098
-                                            },
-                                            {
-                                                "product_url": "https://www.nike.com/gb/t/zoom-fly-5-road-running-shoes-p5TWL7/DM8968-600",
-                                                "image_url": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/56db6d6f-e055-404d-b935-ecf30abf595f/sportswear-max90-t-shirt-k69CPJ.png",
-                                                "type": "physical",
-                                                "reference": "XEUCND20100RIQ1O71",
-                                                "name": "Nike Zoom Fly 5 - Men's Road Running Shoes",
-                                                "quantity": 1,
-                                                "unit_price": 15495,
-                                                "total_amount": 15495
-                                            },
-                                            {
-                                                "type": "shipping_fee",
-                                                "name": "Standard Delivery",
-                                                "quantity": 1,
-                                                "unit_price": 499,
-                                                "total_amount": 499
-                                            }
-                                        ]
-                                    };
-                                    var payloads = {
-                                        'option1': payload1,
-                                        'option2': payload2,
-                                        'option3': payload3,
-                                        'option4': payload4,
-                                        'option5': payload5,
-                                        'option6': payload6,
-                                    }
-                                    var selectedPayload = payloads[selectedOption];
-                                    Klarna.Payments.finalize({}, selectedPayload, function(res) {
-                                        console.log('res', res)
-                                        document.getElementById('client_token').textContent = res.client_token
-                                        document.getElementById('authorization_token').textContent = res.authorization_token
-                                        document.getElementById('approved').textContent = res.approved
-                                        document.getElementById('collected_shipping_address').textContent = JSON.stringify(res.collected_shipping_address)
-                                        document.getElementById('finalize_required').textContent = res.finalize_required
-                                        var authorizationTokenNotEmpty = (res.authorization_token !== "");
-                                        if (res.approved && !res.finalize_required && authorizationTokenNotEmpty) {
-                                            finalizeBtn.style.display = 'none';
-                                            document.querySelector('.payloadOptions').style.display = 'none';
-                                            var message = document.createElement('p');
-                                            message.textContent = 'Authorization Finalized!';
-                                            message.style.color = 'green';
-                                            message.style.fontSize = '1.2rem';
-                                            message.style.fontWeight = 'bold';
-                                            finalizeBtn.parentNode.insertBefore(message, finalizeBtn.nextSibling);
-                                        }
-                                    });
-                                };
-                                btnContainer.insertBefore(finalizeBtn, document.getElementById('authorize-results'));
-                            }
-                        },
-                    );
-                },
+        ]);
+    }
+    function getKlarnaPayload(orderAmount, orderLines, country = "US", currency = "USD", locale = "en-US") {
+        return {
+            purchase_country: country,
+            purchase_currency: currency,
+            intent: "buy_and_default_tokenize",
+            locale: locale,
+            merchant_reference1: "12142424",
+            merchant_reference2: "phe2323",
+            merchant_urls: {
+                authorization: "https://webhook.site/c292a862-2376-4944-aea7-25fcba1ebe7d",
+                confirmation: "https://example.com/confirmation"
             },
-            function load_callback(loadResult) {
-                console.log('loadResult', loadResult),
-                    console.log('loadResult show_form:', loadResult.show_form),
-                    console.log('loadResult error:', loadResult.error)
+            order_amount: orderAmount,
+            order_lines: orderLines
+        };
+    }
+    function getAlternativePayloads() {
+        const baseLines = getKlarnaOrderLines();
+        const baseAmount = baseLines.reduce((sum, l) => sum + l.total_amount, 0) - Math.round(discount * 100);
+        // Option 1: as is
+        const option1 = getKlarnaPayload(baseAmount, baseLines);
+        // Option 2: increase shipping
+        const lines2 = JSON.parse(JSON.stringify(baseLines));
+        lines2[lines2.length - 1].unit_price = 1407;
+        lines2[lines2.length - 1].total_amount = 1407;
+        lines2[lines2.length - 1].name = "Next Day Delivery";
+        const option2 = getKlarnaPayload(baseAmount - Math.round(shipping * 100) + 1407, lines2);
+        // Option 3: increase order amount to $900
+        const option3 = getKlarnaPayload(90000, baseLines);
+        // Option 4: increase order amount to $1100
+        const option4 = getKlarnaPayload(110000, baseLines);
+        // Option 5: increase order amount to $4100
+        const option5 = getKlarnaPayload(410000, baseLines);
+        // Option 6: change country/currency
+        const option6 = getKlarnaPayload(baseAmount, baseLines, "CA", "CAD", "es-CA");
+        return [option1, option2, option3, option4, option5, option6];
+    }
+    function renderPayloadOptions() {
+        const opts = getAlternativePayloads();
+        const list = document.getElementById('payload-options-list');
+        list.innerHTML = '';
+        const labels = [
+            `Keep using the same payload sent with authorize (order_amount: $${(opts[0].order_amount/100).toFixed(2)})`,
+            `Increase shipping (order_amount: $${(opts[1].order_amount/100).toFixed(2)})`,
+            `Increase order_amount to $900`,
+            `Increase order_amount to $1100`,
+            `Increase order_amount to $4100`,
+            `Change purchase_country and purchase_currency (From en-US to ES-EUR) (Not supported)`
+        ];
+        opts.forEach((_, i) => {
+            const div = document.createElement('div');
+            div.style.marginTop = i === 0 ? '' : '20px';
+            div.innerHTML = `<input type="radio" id="payload_option${i+1}" name="payload_option" value="option${i+1}" ${i===0?'checked':''}>
+                <label for="payload_option${i+1}">${labels[i]}</label>`;
+            list.appendChild(div);
+        });
+    }
+    function getSelectedPayload() {
+        const idx = Array.from(document.getElementsByName('payload_option')).findIndex(r => r.checked);
+        return getAlternativePayloads()[idx];
+    }
+    function getAuthorizePayload() {
+        const baseLines = getKlarnaOrderLines();
+        const baseAmount = baseLines.reduce((sum, l) => sum + l.total_amount, 0) - Math.round(discount * 100);
+        return getKlarnaPayload(baseAmount, baseLines);
+    }
+    // Klarna integration
+    window.klarnaAsyncCallback = function() {
+        window.Klarna.Payments.Buttons.init({
+            client_key: "klarna_test_client_bVUhc1k2QkxKNmNnTXhFZHl4Nz9sN1F6Z20yT1UxT2IsNzkyNjY3YjAtYmE0OC00ZGFjLThkYjQtMjRjZTBkOTU5ZTkxLDEsTGRZUGcveG9yUThrcGY4VkRScEZ0RmhsOEpnVC9Nd2dHRy95L0gxMDJVMD0",
+        }).load({
+            container: "#container",
+            theme: "dark",
+            shape: "pill",
+            locale: "en-US",
+            on_click: (authorize) => {
+                const autoFinalizeValue = document.querySelector('input[name="auto_finalize"]:checked').value;
+                const payload = getAuthorizePayload();
+                authorize({
+                    collect_shipping_address: true,
+                    auto_finalize: autoFinalizeValue === "true"
+                }, payload, (result) => {
+                    document.getElementById('authorize-results').style.display = 'table';
+                    document.getElementById('client_token').textContent = result.client_token
+                    document.getElementById('authorization_token').textContent = result.authorization_token
+                    document.getElementById('approved').textContent = result.approved
+                    document.getElementById('collected_shipping_address').textContent = JSON.stringify(result.collected_shipping_address)
+                    document.getElementById('finalize_required').textContent = result.finalize_required
+                    var isApproved = result.approved;
+                    var authorizationTokenNotEmpty = (result.authorization_token !== "");
+                    var isFinalizedRequired = result.finalize_required
+                    document.getElementById('message-container').innerHTML = '';
+                    if (isApproved && authorizationTokenNotEmpty && !isFinalizedRequired) {
+                        var message = document.createElement('p');
+                        message.textContent = 'Authorization Finalized!';
+                        message.style.color = 'green';
+                        message.style.fontSize = '1.2rem';
+                        message.style.fontWeight = 'bold';
+                        document.getElementById('message-container').appendChild(message);
+                    }
+                    if (result.finalize_required) {
+                        renderPayloadOptions();
+                        document.querySelector('.payloadOptions').style.display = 'block';
+                        let btnContainer = document.querySelector('.mt-5');
+                        let oldBtn = document.getElementById('finalize-btn');
+                        if (oldBtn) oldBtn.remove();
+                        let finalizeBtn = document.createElement('button');
+                        finalizeBtn.id = 'finalize-btn';
+                        finalizeBtn.textContent = 'Place Order // finalize()';
+                        finalizeBtn.style.backgroundColor = 'black';
+                        finalizeBtn.style.color = 'white';
+                        finalizeBtn.style.width = '325px';
+                        finalizeBtn.style.height = '50px';
+                        finalizeBtn.style.marginBottom = '20px';
+                        finalizeBtn.style.border = 'none';
+                        finalizeBtn.style.boxShadow = '5px 5px 10px rgba(0, 0, 0, .25)';
+                        finalizeBtn.style.borderRadius = '25px';
+                        finalizeBtn.style.fontWeight = 'bold';
+                        finalizeBtn.onclick = function() {
+                            const selectedPayload = getSelectedPayload();
+                            Klarna.Payments.finalize({}, selectedPayload, function(res) {
+                                document.getElementById('client_token').textContent = res.client_token
+                                document.getElementById('authorization_token').textContent = res.authorization_token
+                                document.getElementById('approved').textContent = res.approved
+                                document.getElementById('collected_shipping_address').textContent = JSON.stringify(res.collected_shipping_address)
+                                document.getElementById('finalize_required').textContent = res.finalize_required
+                                var authorizationTokenNotEmpty = (res.authorization_token !== "");
+                                if (res.approved && !res.finalize_required && authorizationTokenNotEmpty) {
+                                    finalizeBtn.style.display = 'none';
+                                    document.querySelector('.payloadOptions').style.display = 'none';
+                                    var message = document.createElement('p');
+                                    message.textContent = 'Authorization Finalized!';
+                                    message.style.color = 'green';
+                                    message.style.fontSize = '1.2rem';
+                                    message.style.fontWeight = 'bold';
+                                    finalizeBtn.parentNode.insertBefore(message, finalizeBtn.nextSibling);
+                                }
+                            });
+                        };
+                        btnContainer.insertBefore(finalizeBtn, document.getElementById('authorize-results'));
+                    } else {
+                        document.querySelector('.payloadOptions').style.display = 'none';
+                        let oldBtn = document.getElementById('finalize-btn');
+                        if (oldBtn) oldBtn.remove();
+                    }
+                });
             },
-        );
+        }, function(loadResult) {
+            // ...existing code...
+        });
     };
-    Klarna.Payments.init({
-        client_token: result.client_token
+    document.addEventListener('DOMContentLoaded', function() {
+        renderCart();
+        updateSummary();
+        document.querySelectorAll('input[name="auto_finalize"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'false') {
+                    renderPayloadOptions();
+                } else {
+                    document.querySelector('.payloadOptions').style.display = 'none';
+                }
+            });
+        });
     });
     </script>
     <script src="https://x.klarnacdn.net/kp/lib/v1/api.js" async></script>

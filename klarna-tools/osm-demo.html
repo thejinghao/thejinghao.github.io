@@ -36,8 +36,32 @@
             }
         };
 
+        // New function: updateKlarnaPayload builds the order payload automatically
+        function updateKlarnaPayload() {
+            var orderLines = dataLayer.map(function(item) {
+                return { name: item.product.name, unit_price: item.product.price * 100 };
+            });
+            var totalAmount = orderLines.reduce(function(acc, line) {
+                return acc + line.unit_price;
+            }, 0);
+            var payload = { order_lines: orderLines, total_amount: totalAmount };
+            console.log("Updated Klarna Payload:", payload);
+            window.KlarnaPayload = payload;
+        }
+
+        // New function: updateOrder reads new values and updates the payload
+        function updateOrder(index) {
+            var priceInput = document.getElementById("price-" + index);
+            var nameInput = document.getElementById("name-" + index);
+            dataLayer[index].product.price = parseFloat(priceInput.value);
+            dataLayer[index].product.name = nameInput.value;
+            window.setPrice(index);
+            updateKlarnaPayload();
+        }
+
         document.addEventListener("DOMContentLoaded", function () {
             window.setPrice(1);
+            updateKlarnaPayload();
             if (window.KlarnaOnsiteService) {
                 window.KlarnaOnsiteService.push({ eventName: "refresh-placements" });
             }
@@ -58,6 +82,31 @@
             <button onclick="window.setPrice(0)">Pay Later</button>
             <button onclick="window.setPrice(1)">Pay in Parts</button>
             <button onclick="window.setPrice(2)">Financing</button>
+        </div>
+    </section>
+
+    <!-- New Section: Order Lines Editor -->
+    <section id="order-lines-editor">
+        <h2>Edit Order Lines</h2>
+        <div>
+            <div>
+                <label>Product 1 Name: </label>
+                <input type="text" id="name-0" value="Example product 1">
+                <label>Price: </label>
+                <input type="number" id="price-0" value="20" onchange="updateOrder(0)">
+            </div>
+            <div>
+                <label>Product 2 Name: </label>
+                <input type="text" id="name-1" value="Example product 2">
+                <label>Price: </label>
+                <input type="number" id="price-1" value="100" onchange="updateOrder(1)">
+            </div>
+            <div>
+                <label>Product 3 Name: </label>
+                <input type="text" id="name-2" value="Example product 3">
+                <label>Price: </label>
+                <input type="number" id="price-2" value="1755" onchange="updateOrder(2)">
+            </div>
         </div>
     </section>
 
