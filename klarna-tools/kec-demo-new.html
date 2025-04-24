@@ -28,6 +28,7 @@
                 <p><strong>Grand Total: <span id="grand-total">$0.00</span></strong></p>
             </div>
             <div id="klarna-express-container"></div>
+            <button id="create-order-btn" class="api-helper-btn" type="button">Create Order</button>
         </div>
     </div>
     <div class="response-table-container">
@@ -230,10 +231,68 @@
             // Optionally handle load result
         });
     };
+    // API Helper: Create Order button logic
+    function createDummyOrderPayload() {
+        return {
+            order_id: Math.floor(Math.random() * 1000000),
+            company: companyName,
+            items: basket.map(item => ({
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity
+            })),
+            shipping,
+            discount,
+            total: basket.reduce((sum, item) => sum + item.price * item.quantity, 0) + shipping - discount,
+            created_at: new Date().toISOString()
+        };
+    }
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('company-title').textContent = companyName;
         renderBasket();
         updateSummary();
+        document.getElementById('create-order-btn').onclick = function() {
+            const payload = createDummyOrderPayload();
+            fetch('https://webhook.site/8c529684-3397-46ce-8081-8f9ea21e3c05', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                alert('Dummy order created and sent!');
+            });
+        };
+        // Admin modal open/close
+        document.getElementById('open-admin-modal').onclick = function() {
+            renderAdminForm();
+            document.getElementById('admin-modal').style.display = 'flex';
+        };
+        document.getElementById('close-admin-modal').onclick = function() {
+            document.getElementById('admin-modal').style.display = 'none';
+        };
+        document.getElementById('admin-modal').onclick = function(e) {
+            if (e.target === this) this.style.display = 'none';
+        };
+        // Admin form save
+        document.getElementById('admin-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            let basketData = getBasketFromStorage();
+            companyName = this['companyName'].value || 'Acme Corp.';
+            localStorage.setItem('companyName', companyName);
+            document.getElementById('company-title').textContent = companyName;
+            shipping = parseFloat(this['shipping'].value) || 0;
+            discount = parseFloat(this['discount'].value) || 0;
+            basketData.forEach((item, idx) => {
+                item.name = this[`name-${idx}`].value;
+                item.desc = this[`desc-${idx}`].value;
+                item.price = parseFloat(this[`price-${idx}`].value) || 0;
+                item.image = this[`image-${idx}`].value;
+            });
+            setBasketToStorage(basketData);
+            document.getElementById('admin-modal').style.display = 'none';
+            updateBasketFromStorage();
+            renderBasket();
+            updateSummary();
+        });
     });
     // Admin modal logic and basket persistence
     const defaultBasket = [
@@ -317,44 +376,6 @@
         saveBtn.textContent = 'Save Changes';
         form.appendChild(saveBtn);
     }
-    document.addEventListener('DOMContentLoaded', function() {
-        // Modal open/close
-        document.getElementById('open-admin-modal').onclick = function() {
-            renderAdminForm();
-            document.getElementById('admin-modal').style.display = 'flex';
-        };
-        document.getElementById('close-admin-modal').onclick = function() {
-            document.getElementById('admin-modal').style.display = 'none';
-        };
-        document.getElementById('admin-modal').onclick = function(e) {
-            if (e.target === this) this.style.display = 'none';
-        };
-        // Save admin form
-        document.getElementById('admin-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            let basketData = getBasketFromStorage();
-            // Save company name
-            companyName = this['companyName'].value || 'Acme Corp.';
-            localStorage.setItem('companyName', companyName);
-            document.getElementById('company-title').textContent = companyName;
-            // Save shipping and discount
-            shipping = parseFloat(this['shipping'].value) || 0;
-            discount = parseFloat(this['discount'].value) || 0;
-            // Save product fields
-            basketData.forEach((item, idx) => {
-                item.name = this[`name-${idx}`].value;
-                item.desc = this[`desc-${idx}`].value;
-                item.price = parseFloat(this[`price-${idx}`].value) || 0;
-                item.image = this[`image-${idx}`].value;
-            });
-            setBasketToStorage(basketData);
-            document.getElementById('admin-modal').style.display = 'none';
-            updateBasketFromStorage();
-            renderBasket();
-            updateSummary();
-        });
-    });
-    // Use basket from storage if available
     function updateBasketFromStorage() {
         const newBasket = getBasketFromStorage();
         basket.length = 0;
@@ -713,6 +734,24 @@
             font-size: 14px;
             max-width: 120px;
         }
+    }
+    .api-helper-btn {
+        display: block;
+        width: 100%;
+        margin: 18px 0 0 0;
+        padding: 12px 0;
+        background: linear-gradient(120deg, #4e54c8 0%, #8f94fb 100%);
+        color: #fff;
+        font-size: 1.1rem;
+        font-weight: 700;
+        border: none;
+        border-radius: 6px;
+        box-shadow: 0 2px 8px rgba(58,76,168,0.10);
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .api-helper-btn:hover {
+        background: linear-gradient(120deg, #8f94fb 0%, #4e54c8 100%);
     }
     </style>
 </body>
