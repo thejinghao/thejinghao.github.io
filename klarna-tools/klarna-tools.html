@@ -26,9 +26,9 @@
                         <td><a href="osm-demo.html" class="demo-button">View Demo</a></td>
                     </tr>
                     <tr>
-                        <td>Express Checkout (KEC)</td>
-                        <td>Demo of Klarna's Express Checkout integration and functionality</td>
-                        <td><a href="kec-demo.html" class="demo-button">View Demo</a></td>
+                        <td><span class="crossed-out">Express Checkout (KEC)</span></td>
+                        <td class="crossed-out">Demo of Klarna's Express Checkout integration and functionality</td>
+                        <td><a href="kec-demo.html" class="demo-button demo-button-disabled" tabindex="-1" aria-disabled="true">View Demo</a></td>
                     </tr>
                     <tr>
                         <td>Express Checkout (KEC) New</td>
@@ -97,6 +97,20 @@
         
         .demo-button:hover {
             background-color: #0056b3;
+        }
+
+        .crossed-out {
+            text-decoration: line-through;
+            color: #888;
+            opacity: 0.6;
+        }
+
+        .demo-button-disabled {
+            background-color: #ccc !important;
+            color: #888 !important;
+            pointer-events: none;
+            cursor: not-allowed;
+            border: 1px solid #bbb;
         }
     </style>
 </body>
